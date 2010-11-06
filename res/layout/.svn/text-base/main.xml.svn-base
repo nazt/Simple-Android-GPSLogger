@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView android:id="@+id/ScrollView01"
+	android:layout_height="wrap_content" xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent">
+
+	<LinearLayout android:orientation="vertical"
+		android:layout_height="wrap_content" android:layout_width="fill_parent">
+
+
+		<Button android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:textStyle="bold"
+			android:id="@+id/ButtonStart" android:text="@string/start"
+			android:textSize="16px" android:width="90px" />
+		<Button android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:textStyle="bold"
+			android:id="@+id/ButtonStop" android:text="@string/stop"
+			android:textSize="16px" android:width="90px" />
+
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/TextViewCurrentTripName"
+			android:text="Current trip:"></TextView>
+		<EditText android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/EditTextTripName"
+			android:width="200px"></EditText>
+		<Button android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/ButtonNewTrip"
+			android:text="Start new Trip" android:textSize="16px"
+			android:textStyle="bold"></Button>
+		<TableLayout android:id="@+id/TableLayout01"
+			android:layout_height="wrap_content" android:padding="3px"
+			android:layout_width="fill_parent">
+			<TableRow android:id="@+id/TableRow01"
+				android:layout_height="wrap_content" android:layout_width="fill_parent">
+				<RadioGroup android:id="@+id/RadioGroup01"
+					android:layout_width="wrap_content" android:layout_height="wrap_content"
+					android:padding="3px">
+					<RadioButton android:layout_width="wrap_content"
+						android:layout_height="wrap_content" android:id="@+id/RadioGround"
+						android:text="Ground" android:textSize="16px" android:textStyle="bold" />
+					<RadioButton android:layout_width="wrap_content"
+						android:layout_height="wrap_content" android:id="@+id/RadioAir"
+						android:text="Air" android:textSize="16px" android:textStyle="bold" />
+				</RadioGroup>
+				<LinearLayout android:id="@+id/LinearLayout01"
+					android:layout_width="wrap_content" android:layout_height="wrap_content"
+					android:gravity="center_vertical" android:orientation="vertical"
+					android:padding="3px">
+					<TextView android:id="@+id/TextView01"
+						android:layout_width="wrap_content" android:layout_height="wrap_content"
+						android:padding="3px" android:text="Altitude correction (meters):"></TextView>
+					<EditText android:layout_width="wrap_content"
+						android:layout_height="wrap_content" android:id="@+id/EditTextAltitudeCorrection"
+						android:digits="-0123456789"></EditText>
+				</LinearLayout>
+			</TableRow>
+
+		</TableLayout>
+		<Button android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/ButtonExport"
+			android:includeFontPadding="true" android:text="@string/Export"
+			android:textSize="16px" android:textStyle="bold"></Button>
+
+
+
+
+		<ToggleButton android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/ToggleButtonDebug"
+			android:textOn="Debug On" android:textOff="Debug Off" android:width="90px"></ToggleButton>
+
+
+	</LinearLayout>
+</ScrollView>

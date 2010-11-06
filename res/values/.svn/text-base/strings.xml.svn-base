@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">GPSLogger</string>
+    <string name="app_name">GPSLogger</string>
+<string name="start">Start</string>
+<string name="stop">Stop</string>
+<string name="service_name">GPSLoggerService</string>
+<string name="local_service_started">GPSLoggerService is running</string>
+<string name="local_service_stopped">GPSLoggerService has stopped</string>
+<string name="Export">Export KML to SD Card</string>
+</resources>
