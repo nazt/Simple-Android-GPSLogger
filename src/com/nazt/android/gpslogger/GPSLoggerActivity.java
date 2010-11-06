@@ -1,13 +1,8 @@
 package com.nazt.android.gpslogger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +12,6 @@ import com.nazt.android.gpslogger.service.GPSLoggerService;
 import com.nazt.android.gpslogger.R;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,15 +20,12 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class GPSLoggerActivity extends Activity {
 
 	private static final String tag = "GPSLoggerActivity";
-
-	private static final String tripFileName = "currentTrip.txt";
 
 	private String currentTripName = "";
 
@@ -55,9 +45,7 @@ public class GPSLoggerActivity extends Activity {
 		button.setOnClickListener(mStopListener);
 		// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
 		initTripName();
-		button = (Button) findViewById(R.id.ButtonNewTrip);
-		button.setOnClickListener(mNewTripListener);
-		
+
 		GPSLoggerService.setShowingDebugToast(true);
 	}
 
@@ -65,50 +53,17 @@ public class GPSLoggerActivity extends Activity {
 	private void initTripName() {
 		// see if there's currently a trip in the trip file
 		String tripName = "new";
-		String info_msg = "";
 		try {
-			FileInputStream fIn = openFileInput(tripFileName);
-			InputStreamReader isr = new InputStreamReader(fIn);
-			char[] inputBuffer = new char[1024];
-			isr.read(inputBuffer);
-			isr.close();
-			fIn.close();
-			tripName = new String(inputBuffer).trim();
-			info_msg = "loaded trip name: " + tripName;
-			Toast.makeText(getBaseContext(), info_msg, Toast.LENGTH_SHORT)
-					.show();
-			Log.i(tag, info_msg);
-		} catch (FileNotFoundException fnfe) {
-			info_msg = "first run, no" + tripFileName;
-
-			Toast.makeText(getBaseContext(), info_msg, Toast.LENGTH_SHORT);
-			Log.i(tag, info_msg);
-			try {
-				//yyyyMMMddHm
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmm");
-				tripName = sdf.format(new Date());
-				// บันทึกชื่อ Trip ลงใน currentTrip.txt
-				saveTripName(tripName);
-			} catch (Exception e) {
-				Log.e(tag, e.toString());
-			}
-		} catch (IOException ioe) {
-			Log.e(tag, ioe.toString());
+			// yyyyMMMddHm
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmmss");
+			tripName = sdf.format(new Date());
+		} catch (Exception e) {
+			Log.e(tag, e.toString());
 		}
+
 		TextView tripNameEditor = (TextView) findViewById(R.id.EditTextTripName);
 		tripNameEditor.setText(tripName);
 		currentTripName = tripName;
-	}
-
-	// บันทึกชื่อ Trip ลงใน currentTrip.txt
-	private void saveTripName(String tripName) throws FileNotFoundException,
-			IOException {
-		FileOutputStream fOut = openFileOutput(tripFileName, MODE_PRIVATE);
-		OutputStreamWriter osw = new OutputStreamWriter(fOut);
-		osw.write(tripName);
-		osw.flush();
-		osw.close();
-		fOut.close();
 	}
 
 	private OnClickListener mStartListener = new OnClickListener() {
@@ -120,38 +75,11 @@ public class GPSLoggerActivity extends Activity {
 
 	private OnClickListener mStopListener = new OnClickListener() {
 		public void onClick(View v) {
-			doExport();
+			doNewTrip();
 			stopService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
 	};
-
-	private OnClickListener mNewTripListener = new OnClickListener() {
-		public void onClick(View v) {
-			doNewTripDialog();
-		}
-	};
- 
-	private void doNewTripDialog() {
-		AlertDialog.Builder ad = new AlertDialog.Builder(GPSLoggerActivity.this);
-		ad.setTitle("Whammo!");
-		ad.setMessage("Are you sure that you want to start anew?");
-		ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// export ข้อมูลลง KML แล้วลบข้อมูลใน database
-				// แล้วก็บันทึกชื่อทริปใหม่ลงใน currentTrip.txt
-				doNewTrip();
-			}
-		});
-		ad.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา
-				// เคสนี้มันโหลดอย่างเดียวอยู่แล้ว
-				initTripName();
-			}
-		});
-		ad.show();
-	}
 
 	// export ข้อมูลลง KML แล้วลบข้อมูลใน database แล้วก็บันทึกชื่อทริปใหม่ลงใน
 	// currentTrip.txt
@@ -162,20 +90,13 @@ public class GPSLoggerActivity extends Activity {
 			db = openOrCreateDatabase(GPSLoggerService.DATABASE_NAME,
 					SQLiteDatabase.OPEN_READWRITE, null);
 			db.execSQL("DELETE FROM " + GPSLoggerService.POINTS_TABLE_NAME);
-			EditText tripNameEditor = (EditText) findViewById(R.id.EditTextTripName);
-			saveTripName(tripNameEditor.getText().toString());
 		} catch (Exception e) {
 			Log.e(tag, e.toString());
 		} finally {
+			initTripName();
 			close_db(db);
 		}
 	}
-
-	private OnClickListener mExportListener = new OnClickListener() {
-		public void onClick(View v) {
-			doExport();
-		}
-	};
 
 	private void doExport() {
 		// export the db contents to a kml file
@@ -342,6 +263,7 @@ public class GPSLoggerActivity extends Activity {
 	public int getAltitudeCorrectionMeters() {
 		return altitudeCorrectionMeters;
 	}
+
 	public void close_db(SQLiteDatabase db) {
 		if (db != null && db.isOpen()) {
 			db.close();
