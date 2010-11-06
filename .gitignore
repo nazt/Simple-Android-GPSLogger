@@ -1,5 +1,3 @@
 *.class
-*.apk
-bin/*
-bin
-/bin
+bin/
+classes.dex
