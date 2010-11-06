@@ -77,13 +77,15 @@ public class GPSLoggerService extends Service {
 			if (loc != null) {
 				boolean pointIsRecorded = false;
 				try {
-					Toast.makeText(getBaseContext(), "Accuracy in "+loc.getAccuracy(), Toast.LENGTH_SHORT);
+					Toast.makeText(getBaseContext(), "Accuracy: "+loc.getAccuracy(), Toast.LENGTH_SHORT);
 					if (loc.hasAccuracy() && loc.getAccuracy() <= minAccuracyMeters) {
 						pointIsRecorded = true;
+						/*  getCurrentTime Section */
 						GregorianCalendar greg = new GregorianCalendar();
 						TimeZone tz = greg.getTimeZone();
 						int offset = tz.getOffset(System.currentTimeMillis());
 						greg.add(Calendar.SECOND, (offset/1000) * -1);
+						/*  end getCurrentTime Section*/
 						StringBuffer queryBuf = new StringBuffer();
 						// ใส่ข้อมูลพิกัดลงใน database
 						queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+
