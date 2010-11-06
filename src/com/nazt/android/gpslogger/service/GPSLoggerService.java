@@ -40,6 +40,7 @@ public class GPSLoggerService extends Service {
 	
 	private static long minTimeMillis = 2000;
 	private static long minDistanceMeters = 10;
+	//กำหนดความแม่นยำขั้นต่ำ
 	private static float minAccuracyMeters = 35;
 	
 	private int lastStatus = 0;
@@ -69,10 +70,6 @@ public class GPSLoggerService extends Service {
 						"ALTITUDE REAL, ACCURACY REAL, SPEED REAL, BEARING REAL);");
 		db.close();
 		Log.i(tag, "Database opened ok");
-	}
-
-	private void shutdownLoggerService() {
-		lm.removeUpdates(locationListener);
 	}
 
 	public class MyLocationListener implements LocationListener {
@@ -108,6 +105,7 @@ public class GPSLoggerService extends Service {
 					if (db.isOpen())
 						db.close();
 				}
+				// ถ้าบันทึกได้แสดงข้อความบอกรายละเอียด Toast
 				if (pointIsRecorded) {
 					if (showingDebugToast) Toast.makeText(
 							getBaseContext(),
@@ -126,6 +124,10 @@ public class GPSLoggerService extends Service {
 							Toast.LENGTH_SHORT).show();
 				}
 			}
+		}
+
+		private void shutdownLoggerService() {
+			lm.removeUpdates(locationListener);
 		}
 
 		public void onProviderDisabled(String provider) {
@@ -234,6 +236,10 @@ public class GPSLoggerService extends Service {
 
 	public static void setMinDistanceMeters(long _minDistanceMeters) {
 		minDistanceMeters = _minDistanceMeters;
+	}
+
+	private void shutdownLoggerService() {
+		lm.removeUpdates(locationListener);
 	}
 
 	public static long getMinDistanceMeters() {
