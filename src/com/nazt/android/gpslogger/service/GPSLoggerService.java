@@ -1,4 +1,4 @@
-package com.prom2m.android.gpslogger.service;
+package com.nazt.android.gpslogger.service;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -7,7 +7,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import com.prom2m.android.gpslogger.R;
+import com.nazt.android.gpslogger.R;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -76,11 +76,11 @@ public class GPSLoggerService extends Service {
 	}
 
 	public class MyLocationListener implements LocationListener {
-		
 		public void onLocationChanged(Location loc) {
 			if (loc != null) {
 				boolean pointIsRecorded = false;
 				try {
+					Toast.makeText(getBaseContext(), "Accuracy in "+loc.getAccuracy(), Toast.LENGTH_SHORT);
 					if (loc.hasAccuracy() && loc.getAccuracy() <= minAccuracyMeters) {
 						pointIsRecorded = true;
 						GregorianCalendar greg = new GregorianCalendar();
@@ -88,6 +88,7 @@ public class GPSLoggerService extends Service {
 						int offset = tz.getOffset(System.currentTimeMillis());
 						greg.add(Calendar.SECOND, (offset/1000) * -1);
 						StringBuffer queryBuf = new StringBuffer();
+						// ใส่ข้อมูลพิกัดลงใน database
 						queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+
 								" (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES (" +
 								"'"+timestampFormat.format(greg.getTime())+"',"+
@@ -149,7 +150,7 @@ public class GPSLoggerService extends Service {
 				showStatus = "Out of Service";
 			if (status != lastStatus && showingDebugToast) {
 				Toast.makeText(getBaseContext(),
-						"new status: " + showStatus,
+						"Status: " + showStatus,
 						Toast.LENGTH_SHORT).show();
 			}
 			lastStatus = status;

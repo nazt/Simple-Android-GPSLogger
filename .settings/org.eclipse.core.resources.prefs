@@ -1,3 +1,4 @@
-#Sat Nov 06 22:54:59 ICT 2010
+#Sun Nov 07 00:48:44 ICT 2010
 eclipse.preferences.version=1
-encoding//src/com/prom2m/android/gpslogger/GPSLoggerActivity.java=UTF-8
+encoding//src/com/nazt/android/gpslogger/GPSLoggerActivity.java=UTF-8
+encoding//src/com/nazt/android/gpslogger/service/GPSLoggerService.java=UTF-8

@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package com.prom2m.android.gpslogger;
+package com.nazt.android.gpslogger;
 
 public final class R {
     public static final class attr {

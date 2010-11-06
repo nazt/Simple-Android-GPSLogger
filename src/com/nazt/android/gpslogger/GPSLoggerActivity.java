@@ -1,4 +1,4 @@
-package com.prom2m.android.gpslogger;
+package com.nazt.android.gpslogger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,7 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
-import com.prom2m.android.gpslogger.service.GPSLoggerService;
+import com.nazt.android.gpslogger.service.GPSLoggerService;
+import com.nazt.android.gpslogger.R;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -60,6 +61,7 @@ public class GPSLoggerActivity extends Activity {
 		button.setOnClickListener(mNewTripListener);
 		ToggleButton toggleDebug = (ToggleButton) findViewById(R.id.ToggleButtonDebug);
 		toggleDebug.setOnClickListener(mToggleDebugListener);
+		GPSLoggerService.setShowingDebugToast(true);
 		toggleDebug.setChecked(GPSLoggerService.isShowingDebugToast());
 	}
 
