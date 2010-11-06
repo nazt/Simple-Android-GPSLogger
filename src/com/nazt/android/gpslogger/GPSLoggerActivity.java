@@ -32,6 +32,9 @@ public class GPSLoggerActivity extends Activity {
 	private int altitudeCorrectionMeters = 20;
 
 	private final DecimalFormat sevenSigDigits = new DecimalFormat("0.#######");
+	public static final int STATE_READY = 1;
+	public static final int STATE_START = 2;
+	public static final int STATE_STOP = 3;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -43,6 +46,7 @@ public class GPSLoggerActivity extends Activity {
 		button.setOnClickListener(mStartListener);
 		button = (Button) findViewById(R.id.ButtonStop);
 		button.setOnClickListener(mStopListener);
+		setButtonState(STATE_READY);
 		// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
 		initTripName();
 
@@ -68,13 +72,36 @@ public class GPSLoggerActivity extends Activity {
 
 	private OnClickListener mStartListener = new OnClickListener() {
 		public void onClick(View v) {
+			setButtonState(STATE_START);
 			startService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
 	};
 
+	public void setButtonState(int state) {
+		Button start_button = (Button) findViewById(R.id.ButtonStart);
+		Button stop_button = (Button) findViewById(R.id.ButtonStop);
+
+		start_button.setVisibility(View.GONE);
+		stop_button.setVisibility(View.GONE);
+
+		switch (state) {
+		case STATE_READY:
+		case STATE_STOP:
+			start_button.setVisibility(View.VISIBLE);
+			break;
+		case STATE_START:
+			stop_button.setVisibility(View.VISIBLE);
+			break;
+
+		default:
+			break;
+		}
+	}
+
 	private OnClickListener mStopListener = new OnClickListener() {
 		public void onClick(View v) {
+			setButtonState(STATE_STOP);
 			doNewTrip();
 			stopService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
