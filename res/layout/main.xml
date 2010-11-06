@@ -44,9 +44,7 @@
 
 
 
-		<ToggleButton android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/ToggleButtonDebug"
-			android:textOn="Debug On" android:textOff="Debug Off" android:width="90px"></ToggleButton>
+		
 
 
 	</LinearLayout>

@@ -24,7 +24,6 @@ public final class R {
         public static final int TableLayout01=0x7f050006;
         public static final int TableRow01=0x7f050007;
         public static final int TextViewCurrentTripName=0x7f050003;
-        public static final int ToggleButtonDebug=0x7f050009;
     }
     public static final class layout {
         public static final int main=0x7f030000;

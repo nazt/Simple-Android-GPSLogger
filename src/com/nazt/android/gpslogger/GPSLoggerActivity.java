@@ -29,7 +29,6 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class GPSLoggerActivity extends Activity {
 
@@ -59,10 +58,7 @@ public class GPSLoggerActivity extends Activity {
 		initTripName();
 		button = (Button) findViewById(R.id.ButtonNewTrip);
 		button.setOnClickListener(mNewTripListener);
-		ToggleButton toggleDebug = (ToggleButton) findViewById(R.id.ToggleButtonDebug);
-		toggleDebug.setOnClickListener(mToggleDebugListener);
 		GPSLoggerService.setShowingDebugToast(true);
-		toggleDebug.setChecked(GPSLoggerService.isShowingDebugToast());
 	}
 
 	// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
@@ -133,16 +129,7 @@ public class GPSLoggerActivity extends Activity {
 			doNewTripDialog();
 		}
 	};
-
-	private OnClickListener mToggleDebugListener = new OnClickListener() {
-		public void onClick(View v) {
-			boolean currentDebugState = GPSLoggerService.isShowingDebugToast();
-			GPSLoggerService.setShowingDebugToast(!currentDebugState);
-			ToggleButton toggleButton = (ToggleButton) findViewById(R.id.ToggleButtonDebug);
-			toggleButton.setChecked(!currentDebugState);
-		}
-	};
-
+ 
 	private void doNewTripDialog() {
 		AlertDialog.Builder ad = new AlertDialog.Builder(GPSLoggerActivity.this);
 		ad.setTitle("Whammo!");
