@@ -28,6 +28,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class GPSLoggerActivity extends Activity {
@@ -52,12 +53,11 @@ public class GPSLoggerActivity extends Activity {
 		button.setOnClickListener(mStartListener);
 		button = (Button) findViewById(R.id.ButtonStop);
 		button.setOnClickListener(mStopListener);
-		button = (Button) findViewById(R.id.ButtonExport);
-		button.setOnClickListener(mExportListener);
 		// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
 		initTripName();
 		button = (Button) findViewById(R.id.ButtonNewTrip);
 		button.setOnClickListener(mNewTripListener);
+		
 		GPSLoggerService.setShowingDebugToast(true);
 	}
 
@@ -84,7 +84,8 @@ public class GPSLoggerActivity extends Activity {
 			Toast.makeText(getBaseContext(), info_msg, Toast.LENGTH_SHORT);
 			Log.i(tag, info_msg);
 			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMMdd");
+				//yyyyMMMddHm
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmm");
 				tripName = sdf.format(new Date());
 				// บันทึกชื่อ Trip ลงใน currentTrip.txt
 				saveTripName(tripName);
@@ -94,7 +95,7 @@ public class GPSLoggerActivity extends Activity {
 		} catch (IOException ioe) {
 			Log.e(tag, ioe.toString());
 		}
-		EditText tripNameEditor = (EditText) findViewById(R.id.EditTextTripName);
+		TextView tripNameEditor = (TextView) findViewById(R.id.EditTextTripName);
 		tripNameEditor.setText(tripName);
 		currentTripName = tripName;
 	}
@@ -119,6 +120,7 @@ public class GPSLoggerActivity extends Activity {
 
 	private OnClickListener mStopListener = new OnClickListener() {
 		public void onClick(View v) {
+			doExport();
 			stopService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
@@ -272,7 +274,7 @@ public class GPSLoggerActivity extends Activity {
 		// use ground settings for the export
 		valuesMap.put("EXTRUDE", "0");
 		valuesMap.put("TESSELLATE", "1");
-		valuesMap.put("ALTITUDEMODE", "clampToGround");
+		valuesMap.put("ALTITUDEMODE", "Ground");
 
 		return valuesMap;
 	}

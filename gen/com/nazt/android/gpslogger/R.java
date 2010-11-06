@@ -15,7 +15,6 @@ public final class R {
         public static final int gpslogger48=0x7f020001;
     }
     public static final class id {
-        public static final int ButtonExport=0x7f050008;
         public static final int ButtonNewTrip=0x7f050005;
         public static final int ButtonStart=0x7f050001;
         public static final int ButtonStop=0x7f050002;

@@ -36,10 +36,7 @@
 			</TableRow>
 
 		</TableLayout>
-		<Button android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/ButtonExport"
-			android:includeFontPadding="true" android:text="@string/Export"
-			android:textSize="16px" android:textStyle="bold"></Button>
+		
 
 
 
