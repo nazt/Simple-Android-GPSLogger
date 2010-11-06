@@ -46,6 +46,7 @@ public class GPSLoggerActivity extends Activity {
 		button.setOnClickListener(mStartListener);
 		button = (Button) findViewById(R.id.ButtonStop);
 		button.setOnClickListener(mStopListener);
+		
 		setButtonState(STATE_READY);
 		// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
 		initTripName();
@@ -102,18 +103,16 @@ public class GPSLoggerActivity extends Activity {
 	private OnClickListener mStopListener = new OnClickListener() {
 		public void onClick(View v) {
 			setButtonState(STATE_STOP);
+			doExport();
 			doNewTrip();
 			stopService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
 	};
 
-	// export ข้อมูลลง KML แล้วลบข้อมูลใน database แล้วก็บันทึกชื่อทริปใหม่ลงใน
-	// currentTrip.txt
 	private void doNewTrip() {
 		SQLiteDatabase db = null;
 		try {
-			doExport();
 			db = openOrCreateDatabase(GPSLoggerService.DATABASE_NAME,
 					SQLiteDatabase.OPEN_READWRITE, null);
 			db.execSQL("DELETE FROM " + GPSLoggerService.POINTS_TABLE_NAME);
@@ -180,6 +179,7 @@ public class GPSLoggerActivity extends Activity {
 				// แปลงร่าง File Buffer เป็น String
 				String fileContents = fileBuf.toString();
 				Log.d(tag, fileContents);
+				
 				// กำหนดปลายทางการเขียนไฟล์
 				File sdDir = new File("/sdcard/GPSLogger");
 				sdDir.mkdirs();
@@ -215,19 +215,19 @@ public class GPSLoggerActivity extends Activity {
 		}
 	}
 
-	private HashMap initValuesMap() {
-		HashMap valuesMap = new HashMap();
+	private HashMap<String, String> initValuesMap() {
+		HashMap<String, String> valuesMap = new HashMap<String, String>();
 
 		valuesMap.put("FILENAME", currentTripName);
 		// use ground settings for the export
 		valuesMap.put("EXTRUDE", "0");
 		valuesMap.put("TESSELLATE", "1");
-		valuesMap.put("ALTITUDEMODE", "Ground");
+		valuesMap.put("ALTITUDEMODE", "clampToGround");
 
 		return valuesMap;
 	}
 
-	private void initFileBuf(StringBuffer fileBuf, HashMap valuesMap) {
+	private void initFileBuf(StringBuffer fileBuf, HashMap<String, String> valuesMap) {
 		fileBuf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		fileBuf.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n");
 		fileBuf.append("  <Document>\n");

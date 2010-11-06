@@ -71,7 +71,10 @@ public class GPSLoggerService extends Service {
 		db.close();
 		Log.i(tag, "Database opened ok");
 	}
-
+	private void shutdownLoggerService() {
+		lm.removeUpdates(locationListener);
+	}
+	
 	public class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location loc) {
 			if (loc != null) {
@@ -86,8 +89,9 @@ public class GPSLoggerService extends Service {
 						int offset = tz.getOffset(System.currentTimeMillis());
 						greg.add(Calendar.SECOND, (offset/1000) * -1);
 						/*  end getCurrentTime Section*/
-						StringBuffer queryBuf = new StringBuffer();
+
 						// ใส่ข้อมูลพิกัดลงใน database
+						StringBuffer queryBuf = new StringBuffer();
 						queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+
 								" (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES (" +
 								"'"+timestampFormat.format(greg.getTime())+"',"+
@@ -107,6 +111,7 @@ public class GPSLoggerService extends Service {
 					if (db.isOpen())
 						db.close();
 				}
+				
 				// ถ้าบันทึกได้แสดงข้อความบอกรายละเอียด Toast
 				if (pointIsRecorded) {
 					if (showingDebugToast) Toast.makeText(
@@ -126,10 +131,6 @@ public class GPSLoggerService extends Service {
 							Toast.LENGTH_SHORT).show();
 				}
 			}
-		}
-
-		private void shutdownLoggerService() {
-			lm.removeUpdates(locationListener);
 		}
 
 		public void onProviderDisabled(String provider) {
@@ -154,7 +155,7 @@ public class GPSLoggerService extends Service {
 				showStatus = "Out of Service";
 			if (status != lastStatus && showingDebugToast) {
 				Toast.makeText(getBaseContext(),
-						"Status: " + showStatus,
+						"GPS: " + showStatus,
 						Toast.LENGTH_SHORT).show();
 			}
 			lastStatus = status;
@@ -183,7 +184,6 @@ public class GPSLoggerService extends Service {
 		super.onDestroy();
 		
 		shutdownLoggerService();
-		
 		// Cancel the persistent notification.
 		mNM.cancel(R.string.local_service_started);
 
@@ -240,9 +240,6 @@ public class GPSLoggerService extends Service {
 		minDistanceMeters = _minDistanceMeters;
 	}
 
-	private void shutdownLoggerService() {
-		lm.removeUpdates(locationListener);
-	}
 
 	public static long getMinDistanceMeters() {
 		return minDistanceMeters;
