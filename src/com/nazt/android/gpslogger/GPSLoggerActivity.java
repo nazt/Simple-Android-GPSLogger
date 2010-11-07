@@ -30,7 +30,6 @@ public class GPSLoggerActivity extends Activity {
 	private String currentTripName = "";
 
 	private int altitudeCorrectionMeters = 20;
-
 	private final DecimalFormat sevenSigDigits = new DecimalFormat("0.#######");
 
 	static final int STATE_READY = 1;
@@ -101,7 +100,6 @@ public class GPSLoggerActivity extends Activity {
 		stop_button.setVisibility(View.GONE);
 
 		switch (state) {
-		case STATE_READY:
 		case STATE_STOP:
 			start_button.setVisibility(View.VISIBLE);
 			break;

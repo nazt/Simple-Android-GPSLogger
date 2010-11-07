@@ -43,7 +43,7 @@ public class GPSLoggerService extends Service {
 	//กำหนดความแม่นยำขั้นต่ำ
 	private static float minAccuracyMeters = 35;
 	
-	private int lastStatus = 0;
+	private int lastGpsStatus = 0;
 	private static boolean showingDebugToast = false;
 	
 	private static final String tag = "GPSLoggerService";
@@ -64,6 +64,9 @@ public class GPSLoggerService extends Service {
 		initDatabase();
 	}
 	
+	/**
+	 * Open database if does not exist CREATE! 
+	 */
 	private void initDatabase() {
 		db = this.openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
 		db.execSQL("CREATE TABLE IF NOT EXISTS " +
@@ -72,17 +75,24 @@ public class GPSLoggerService extends Service {
 		db.close();
 		Log.i(tag, "Database opened ok");
 	}
+	/**
+	 * Shutdown GPSLogger Service
+	 */
 	private void shutdownLoggerService() {
 		GPSLoggerService.setRunningStatus(false);
 		lm.removeUpdates(locationListener);
 	}
 	
+	/**
+	 * Implement LocationListener
+	 * @author NAzT
+	 *
+	 */
 	public class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location loc) {
 			if (loc != null) {
 				boolean pointIsRecorded = false;
 				try {
-					Toast.makeText(getBaseContext(), "Accuracy: "+loc.getAccuracy(), Toast.LENGTH_SHORT);
 					if (loc.hasAccuracy() && loc.getAccuracy() <= minAccuracyMeters) {
 						pointIsRecorded = true;
 						/*  getCurrentTime Section */
@@ -114,7 +124,7 @@ public class GPSLoggerService extends Service {
 						db.close();
 				}
 				
-				// ถ้าบันทึกได้แสดงข้อความบอกรายละเอียด Toast
+				// ถ้าบันทึกได้แสดงข้อความบอกรายละเอียดด้วย Toast
 				if (pointIsRecorded) {
 					if (showingDebugToast) Toast.makeText(
 							getBaseContext(),
@@ -155,12 +165,12 @@ public class GPSLoggerService extends Service {
 				showStatus = "Temporarily Unavailable";
 			if (status == LocationProvider.OUT_OF_SERVICE)
 				showStatus = "Out of Service";
-			if (status != lastStatus && showingDebugToast) {
+			if (status != lastGpsStatus && showingDebugToast) {
 				Toast.makeText(getBaseContext(),
 						"GPS: " + showStatus,
 						Toast.LENGTH_SHORT).show();
 			}
-			lastStatus = status;
+			lastGpsStatus = status;
 		}
 
 	}
