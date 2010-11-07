@@ -47,10 +47,11 @@ public class GPSLoggerService extends Service {
 	private static boolean showingDebugToast = false;
 	
 	private static final String tag = "GPSLoggerService";
+	private static boolean running = false;
 
 	/** Called when the activity is first created. */
 	private void startLoggerService() {
-
+		setRunningStatus(true);
 		// ---use the LocationManager class to obtain GPS locations---
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -72,6 +73,7 @@ public class GPSLoggerService extends Service {
 		Log.i(tag, "Database opened ok");
 	}
 	private void shutdownLoggerService() {
+		GPSLoggerService.setRunningStatus(false);
 		lm.removeUpdates(locationListener);
 	}
 	
@@ -269,6 +271,15 @@ public class GPSLoggerService extends Service {
 		GPSLoggerService getService() {
 			return GPSLoggerService.this;
 		}
+	}
+ 
+
+	public static void setRunningStatus(boolean runningStatus) {
+		GPSLoggerService.running = runningStatus;
+	}
+
+	public static boolean isRunningStatus() {
+		return running;
 	}
 
 }

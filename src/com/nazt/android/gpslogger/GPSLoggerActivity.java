@@ -46,9 +46,17 @@ public class GPSLoggerActivity extends Activity {
 		findViewById(R.id.ButtonStart).setOnClickListener(mStartListener);
 		findViewById(R.id.ButtonStop).setOnClickListener(mStopListener);
 
-		setButtonState(STATE_READY);
+		if(GPSLoggerService.isRunningStatus())
+		{
+			setButtonState(STATE_START);	
+		} else {
+			setButtonState(STATE_STOP);
+		}
+		
+		
 		// Auto set TripName to TextView
 		initTripName();
+		GPSLoggerService.isRunningStatus();
 		GPSLoggerService.setShowingDebugToast(true);
 	}
 
