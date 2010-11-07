@@ -23,26 +23,5 @@
 			android:layout_height="wrap_content" android:textStyle="bold"
 			android:id="@+id/ButtonStop" android:text="@string/stop"
 			android:textSize="16px" android:width="200px"/>
-
-
-
-
-		<TableLayout android:id="@+id/TableLayout01"
-			android:layout_height="wrap_content" android:padding="3px"
-			android:layout_width="fill_parent">
-			<TableRow android:id="@+id/TableRow01"
-				android:layout_height="wrap_content" android:layout_width="fill_parent">
-
-			</TableRow>
-
-		</TableLayout>
-
-
-
-
-
-
-
-
 	</LinearLayout>
 </ScrollView>
