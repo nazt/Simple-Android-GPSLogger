@@ -42,20 +42,19 @@ public class GPSLoggerActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		/**
-		 * 1. Set Action for each Button 
+		 * 1. Set Action for each Button
 		 */
-		
+		findViewById(R.id.ButtonStart).setOnClickListener(mStartListener);
+		findViewById(R.id.ButtonStop).setOnClickListener(mStopListener);
 		/**
-		 * End Step 1 
+		 * End Step 1
 		 */
-		if(GPSLoggerService.isRunningStatus())
-		{
-			setButtonState(STATE_START);	
+		if (GPSLoggerService.isRunningStatus()) {
+			setButtonState(STATE_START);
 		} else {
 			setButtonState(STATE_STOP);
 		}
-		
-		
+
 		// Auto set TripName to TextView
 		initTripName();
 		GPSLoggerService.isRunningStatus();
@@ -144,6 +143,7 @@ public class GPSLoggerActivity extends Activity {
 			close_db(db);
 		}
 	}
+
 	/**
 	 * Export database contents to a kml file
 	 */
@@ -185,57 +185,56 @@ public class GPSLoggerActivity extends Activity {
 					/**
 					 * 2. getData from database (cursor);
 					 */
-					
-					
-					
-					
-					
-					
+					double latitude = cursor.getDouble(latitudeColumnIndex);
+					double longitude = cursor.getDouble(longitudeColumnIndex);
+					double altitude = cursor.getDouble(altitudeColumnIndex)
+							+ this.getAltitudeCorrectionMeters();
+					double accuracy = cursor.getDouble(accuracyColumnIndex);
+
 					/**
 					 * End step 2.
-					 */				
-					
-					
-					
-					
-					
+					 */
+
 					/**
 					 * 3. Write data (query from database) to file
-					 */					
-				
-					
-					
-					
-					
-					
+					 */
+					fileBuf.append(sevenSigDigits.format(longitude) + ","
+							+ sevenSigDigits.format(latitude) + "," + altitude
+							+ "\n");
+
 					/**
 					 * End Step 3.
 					 */
 				} while (cursor.moveToNext());
 
 				endTimestamp = gmtTimestamp;
-				// closeFileBuf ปิด Setting ไฟล์ KML ส่วนหลังหลังเก็บพิกัด (แชร์fileBuf)
+				// closeFileBuf ปิด Setting ไฟล์ KML ส่วนหลังหลังเก็บพิกัด
+				// (แชร์fileBuf)
 				closeFileBuf(fileBuf, beginTimestamp, endTimestamp);
-				
+
 				// แปลงร่าง File Buffer เป็น String
 				String fileContents = fileBuf.toString();
 				Log.d(tag, fileContents);
 
-
 				/**
 				 * Step 4. Write file to /sdcard
 				 */
+				File sdDir = new File("/sdcard/GPSLogger");
+				sdDir.mkdirs();
+				File file = new File("/sdcard/GPSLogger/" + currentTripName
+						+ ".kml");
+				FileWriter sdWriter = new FileWriter(file, false);
+				sdWriter.write(fileContents);
+				sdWriter.close();
 
-
-				
-				
 				/**
 				 * End Step 4.
 				 */
 				// R.string.export_completed Predefined in string.xml
 				Toast.makeText(getBaseContext(), R.string.export_completed,
 						Toast.LENGTH_LONG).show();
-				// ถ้า cursor.moveToFirst() ไม่สำเร็จ แปลว่าไม่มีข้อมูลใน database
+				// ถ้า cursor.moveToFirst() ไม่สำเร็จ แปลว่าไม่มีข้อมูลใน
+				// database
 			} else {
 				Toast.makeText(
 						getBaseContext(),
@@ -258,8 +257,10 @@ public class GPSLoggerActivity extends Activity {
 			close_db(db);
 		}
 	}
+
 	/**
-	 * Initial kml setting data 
+	 * Initial kml setting data
+	 * 
 	 * @return HashMap<String, String>
 	 */
 	private HashMap<String, String> initValuesMap() {
