@@ -1,0 +1,72 @@
+Step 1.
+
+findViewById(R.id.ButtonStart).setOnClickListener(mStartListener);
+findViewById(R.id.ButtonStop).setOnClickListener(mStopListener);	
+
+Step 2.
+double latitude = cursor.getDouble(latitudeColumnIndex);
+double longitude = cursor.getDouble(longitudeColumnIndex);
+double altitude = cursor.getDouble(altitudeColumnIndex) + this.getAltitudeCorrectionMeters();
+double accuracy = cursor.getDouble(accuracyColumnIndex); 	   
+Step 3.
+fileBuf.append(sevenSigDigits.format(longitude) + "," + sevenSigDigits.format(latitude) + "," + altitude  + "\n");          
+         
+Step 4.
+File sdDir = new File("/sdcard/GPSLogger");
+sdDir.mkdirs();
+File file = new File("/sdcard/GPSLogger/" + currentTripName + ".kml");
+FileWriter sdWriter = new FileWriter(file, false);
+sdWriter.write(fileContents);
+sdWriter.close();
+
+Step 4.5
+private LocationManager lm;
+private LocationListener locationListener;
+private SQLiteDatabase db;
+
+Step 5.
+
+lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+locationListener = new MyLocationListener();
+lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
+minTimeMillis, 
+minDistanceMeters,
+locationListener);
+
+Step 5.5.
+
+db = this.openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
+db.execSQL("CREATE TABLE IF NOT EXISTS " +
+POINTS_TABLE_NAME + " (GMTTIMESTAMP VARCHAR, LATITUDE REAL, LONGITUDE REAL," +
+"ALTITUDE REAL, ACCURACY REAL, SPEED REAL, BEARING REAL);");
+db.close();
+Log.i(tag, "Database opened ok");
+
+Step 6.
+StringBuffer queryBuf = new StringBuffer();
+queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+ " (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES (" +
+"'"+timestampFormat.format(greg.getTime())+"',"+
+loc.getLatitude()+","+
+loc.getLongitude()+","+
+(loc.hasAltitude() ? loc.getAltitude() : "NULL")+","+
+(loc.hasAccuracy() ? loc.getAccuracy() : "NULL")+","+
+(loc.hasSpeed() ? loc.getSpeed() : "NULL")+","+
+(loc.hasBearing() ? loc.getBearing() : "NULL")+");");
+Log.i(tag, queryBuf.toString());
+db = openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
+db.execSQL(queryBuf.toString());
+
+Step 7.
+if (status == LocationProvider.AVAILABLE)
+  showStatus = "Available";
+if (status == LocationProvider.TEMPORARILY_UNAVAILABLE)
+  showStatus = "Temporarily Unavailable";
+if (status == LocationProvider.OUT_OF_SERVICE)
+  showStatus = "Out of Service";
+if (status != lastGpsStatus && showingDebugToast) {
+  "GPS: " + showStatus,
+  Toast.LENGTH_SHORT).show();
+}
+
+
+
