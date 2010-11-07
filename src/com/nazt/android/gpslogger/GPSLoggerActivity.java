@@ -41,10 +41,13 @@ public class GPSLoggerActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-
-		findViewById(R.id.ButtonStart).setOnClickListener(mStartListener);
-		findViewById(R.id.ButtonStop).setOnClickListener(mStopListener);
-
+		/**
+		 * 1. Set Action for each Button 
+		 */
+		
+		/**
+		 * End Step 1 
+		 */
 		if(GPSLoggerService.isRunningStatus())
 		{
 			setButtonState(STATE_START);	
@@ -179,15 +182,35 @@ public class GPSLoggerActivity extends Activity {
 					if (beginTimestamp == null) {
 						beginTimestamp = gmtTimestamp;
 					}
-					double latitude = cursor.getDouble(latitudeColumnIndex);
-					double longitude = cursor.getDouble(longitudeColumnIndex);
-					double altitude = cursor.getDouble(altitudeColumnIndex)
-							+ this.getAltitudeCorrectionMeters();
-					double accuracy = cursor.getDouble(accuracyColumnIndex);
-					// เขียนข้อมูลพิกัดลงใน fileBuffer (ตัวแปร fileBuf)
-					fileBuf.append(sevenSigDigits.format(longitude) + ","
-							+ sevenSigDigits.format(latitude) + "," + altitude
-							+ "\n");
+					/**
+					 * 2. getData from database (cursor);
+					 */
+					
+					
+					
+					
+					
+					
+					/**
+					 * End step 2.
+					 */				
+					
+					
+					
+					
+					
+					/**
+					 * 3. Write data (query from database) to file
+					 */					
+				
+					
+					
+					
+					
+					
+					/**
+					 * End Step 3.
+					 */
 				} while (cursor.moveToNext());
 
 				endTimestamp = gmtTimestamp;
@@ -198,14 +221,17 @@ public class GPSLoggerActivity extends Activity {
 				String fileContents = fileBuf.toString();
 				Log.d(tag, fileContents);
 
-				// กำหนดปลายทางการเขียนไฟล์
-				File sdDir = new File("/sdcard/GPSLogger");
-				sdDir.mkdirs();
-				File file = new File("/sdcard/GPSLogger/" + currentTripName
-						+ ".kml");
-				FileWriter sdWriter = new FileWriter(file, false);
-				sdWriter.write(fileContents);
-				sdWriter.close();
+
+				/**
+				 * Step 4. Write file to /sdcard
+				 */
+
+
+				
+				
+				/**
+				 * End Step 4.
+				 */
 				// R.string.export_completed Predefined in string.xml
 				Toast.makeText(getBaseContext(), R.string.export_completed,
 						Toast.LENGTH_LONG).show();

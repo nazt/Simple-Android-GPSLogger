@@ -33,10 +33,16 @@ public class GPSLoggerService extends Service {
 
 	private final DecimalFormat sevenSigDigits = new DecimalFormat("0.#######");
 	private final DateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-
-	private LocationManager lm;
-	private LocationListener locationListener;
-	private SQLiteDatabase db;
+	
+	/**
+	 * Step 4.5 Declare LocationManager, LocationListener, SQLiteDatebase
+	 */
+	
+	
+	
+	/**
+	 * End Step 4.5
+	 */
 	
 	private static long minTimeMillis = 2000;
 	private static long minDistanceMeters = 10;
@@ -53,14 +59,20 @@ public class GPSLoggerService extends Service {
 	private void startLoggerService() {
 		setRunningStatus(true);
 		// ---use the LocationManager class to obtain GPS locations---
-		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		/**
+		 * Step 5. Setup LocationManager and Listener
+		 */
 
-		locationListener = new MyLocationListener();
 
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
-				minTimeMillis, 
-				minDistanceMeters,
-				locationListener);
+		
+		
+		
+		
+		
+		
+		/**
+		 * End Step 5.
+		 */
 		initDatabase();
 	}
 	
@@ -68,19 +80,27 @@ public class GPSLoggerService extends Service {
 	 * Open database if does not exist CREATE! 
 	 */
 	private void initDatabase() {
-		db = this.openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
-		db.execSQL("CREATE TABLE IF NOT EXISTS " +
-				POINTS_TABLE_NAME + " (GMTTIMESTAMP VARCHAR, LATITUDE REAL, LONGITUDE REAL," +
-						"ALTITUDE REAL, ACCURACY REAL, SPEED REAL, BEARING REAL);");
-		db.close();
-		Log.i(tag, "Database opened ok");
+		/**
+		 * Step 5.5 Create Database 
+		 */
+
+		
+		/**
+		 * End Step 5.5
+		 */
 	}
 	/**
 	 * Shutdown GPSLogger Service
 	 */
 	private void shutdownLoggerService() {
-		GPSLoggerService.setRunningStatus(false);
-		lm.removeUpdates(locationListener);
+		/**
+		 * Step 8. removeUpdates
+		 */
+		
+		
+		/**
+		 * End Step 8.
+		 */
 	}
 	
 	/**
@@ -103,19 +123,15 @@ public class GPSLoggerService extends Service {
 						/*  end getCurrentTime Section*/
 
 						// ใส่ข้อมูลพิกัดลงใน database
-						StringBuffer queryBuf = new StringBuffer();
-						queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+
-								" (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES (" +
-								"'"+timestampFormat.format(greg.getTime())+"',"+
-								loc.getLatitude()+","+
-								loc.getLongitude()+","+
-								(loc.hasAltitude() ? loc.getAltitude() : "NULL")+","+
-								(loc.hasAccuracy() ? loc.getAccuracy() : "NULL")+","+
-								(loc.hasSpeed() ? loc.getSpeed() : "NULL")+","+
-								(loc.hasBearing() ? loc.getBearing() : "NULL")+");");
-						Log.i(tag, queryBuf.toString());
-						db = openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
-						db.execSQL(queryBuf.toString());
+						/**
+						 * Step 6. Insert location data to database
+						 */
+
+
+						
+						/**
+						 * End Step 6.
+						 */
 					} 
 				} catch (Exception e) {
 					Log.e(tag, e.toString());
@@ -159,17 +175,14 @@ public class GPSLoggerService extends Service {
 
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 			String showStatus = null;
-			if (status == LocationProvider.AVAILABLE)
-				showStatus = "Available";
-			if (status == LocationProvider.TEMPORARILY_UNAVAILABLE)
-				showStatus = "Temporarily Unavailable";
-			if (status == LocationProvider.OUT_OF_SERVICE)
-				showStatus = "Out of Service";
-			if (status != lastGpsStatus && showingDebugToast) {
-				Toast.makeText(getBaseContext(),
-						"GPS: " + showStatus,
-						Toast.LENGTH_SHORT).show();
-			}
+			/**
+			 * Step 7. Set GPS Status message
+			 */
+
+			
+			/**
+			 * End Step 7.
+			 */
 			lastGpsStatus = status;
 		}
 
