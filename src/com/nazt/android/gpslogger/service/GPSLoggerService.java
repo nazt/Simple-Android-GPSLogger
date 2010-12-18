@@ -32,130 +32,227 @@ public class GPSLoggerService extends Service {
 	public static final String TRIPS_TABLE_NAME = "TRIPS";
 
 	private final DecimalFormat sevenSigDigits = new DecimalFormat("0.#######");
-	private final DateFormat timestampFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+	private final DateFormat timestampFormat = new SimpleDateFormat(
+			"yyyyMMddHHmmss");
 
+	/**
+	 * Step 4.5 Declare LocationManager, LocationListener, SQLiteDatebase
+	 */
 	private LocationManager lm;
 	private LocationListener locationListener;
 	private SQLiteDatabase db;
+	/**
+	 * End Step 4.5
+	 */
 	
+	public static String currentSpeed;
+	public static String currentAltitude;
+	public static String currentAccuracy;
+
 	private static long minTimeMillis = 2000;
 	private static long minDistanceMeters = 10;
-	private static float minAccuracyMeters = 35;
-	
-	private int lastStatus = 0;
+	// กำหนดความแม่นยำขั้นต่ำ
+	private static float minAccuracyMeters = 200;
+
+	private int lastGpsStatus = 0;
 	private static boolean showingDebugToast = false;
-	
+
 	private static final String tag = "GPSLoggerService";
+	private static boolean running = false;
 
 	/** Called when the activity is first created. */
 	private void startLoggerService() {
-
+		setRunningStatus(true);
 		// ---use the LocationManager class to obtain GPS locations---
+		/**
+		 * Step 5. Setup LocationManager and Listener
+		 */
 		lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
 		locationListener = new MyLocationListener();
+		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeMillis,
+				minDistanceMeters, locationListener);
 
-		lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 
-				minTimeMillis, 
-				minDistanceMeters,
-				locationListener);
+		/**
+		 * End Step 5.
+		 */
 		initDatabase();
 	}
-	
+
+	/**
+	 * Open database if does not exist CREATE!
+	 */
 	private void initDatabase() {
-		db = this.openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
-		db.execSQL("CREATE TABLE IF NOT EXISTS " +
-				POINTS_TABLE_NAME + " (GMTTIMESTAMP VARCHAR, LATITUDE REAL, LONGITUDE REAL," +
-						"ALTITUDE REAL, ACCURACY REAL, SPEED REAL, BEARING REAL);");
+		/**
+		 * Step 5.5 Create Database
+		 */
+		db = this.openOrCreateDatabase(DATABASE_NAME,
+				SQLiteDatabase.OPEN_READWRITE, null);
+		db.execSQL("CREATE TABLE IF NOT EXISTS " + POINTS_TABLE_NAME
+				+ " (GMTTIMESTAMP VARCHAR, LATITUDE REAL, LONGITUDE REAL,"
+				+ "ALTITUDE REAL, ACCURACY REAL, SPEED REAL, BEARING REAL);");
 		db.close();
 		Log.i(tag, "Database opened ok");
+		/**
+		 * End Step 5.5
+		 */
 	}
 
+	/**
+	 * Shutdown GPSLogger Service
+	 */
 	private void shutdownLoggerService() {
+		/**
+		 * Step 8. removeUpdates
+		 */
+		GPSLoggerService.setRunningStatus(false);
 		lm.removeUpdates(locationListener);
+
+		/**
+		 * End Step 8.
+		 */
 	}
 
+	/**
+	 * Implement LocationListener
+	 * 
+	 * @author NAzT
+	 * 
+	 */
 	public class MyLocationListener implements LocationListener {
 		public void onLocationChanged(Location loc) {
 			if (loc != null) {
 				boolean pointIsRecorded = false;
 				try {
-					Toast.makeText(getBaseContext(), "Accuracy in "+loc.getAccuracy(), Toast.LENGTH_SHORT);
-					if (loc.hasAccuracy() && loc.getAccuracy() <= minAccuracyMeters) {
+					if (loc.hasAccuracy()
+							&& loc.getAccuracy() <= minAccuracyMeters) {
 						pointIsRecorded = true;
+						/* getCurrentTime Section */
 						GregorianCalendar greg = new GregorianCalendar();
 						TimeZone tz = greg.getTimeZone();
 						int offset = tz.getOffset(System.currentTimeMillis());
-						greg.add(Calendar.SECOND, (offset/1000) * -1);
-						StringBuffer queryBuf = new StringBuffer();
+						greg.add(Calendar.SECOND, (offset / 1000) * -1);
+						/* end getCurrentTime Section */
+
 						// ใส่ข้อมูลพิกัดลงใน database
-						queryBuf.append("INSERT INTO "+POINTS_TABLE_NAME+
-								" (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES (" +
-								"'"+timestampFormat.format(greg.getTime())+"',"+
-								loc.getLatitude()+","+
-								loc.getLongitude()+","+
-								(loc.hasAltitude() ? loc.getAltitude() : "NULL")+","+
-								(loc.hasAccuracy() ? loc.getAccuracy() : "NULL")+","+
-								(loc.hasSpeed() ? loc.getSpeed() : "NULL")+","+
-								(loc.hasBearing() ? loc.getBearing() : "NULL")+");");
+						/**
+						 * Step 6. Insert location data to database
+						 */
+						StringBuffer queryBuf = new StringBuffer();
+						queryBuf.append("INSERT INTO "
+								+ POINTS_TABLE_NAME
+								+ " (GMTTIMESTAMP,LATITUDE,LONGITUDE,ALTITUDE,ACCURACY,SPEED,BEARING) VALUES ("
+								+ "'"
+								+ timestampFormat.format(greg.getTime())
+								+ "',"
+								+ loc.getLatitude()
+								+ ","
+								+ loc.getLongitude()
+								+ ","
+								+ (loc.hasAltitude() ? loc.getAltitude()
+										: "NULL")
+								+ ","
+								+ (loc.hasAccuracy() ? loc.getAccuracy()
+										: "NULL")
+								+ ","
+								+ (loc.hasSpeed() ? loc.getSpeed() : "NULL")
+								+ ","
+								+ (loc.hasBearing() ? loc.getBearing() : "NULL")
+								+ ");");
 						Log.i(tag, queryBuf.toString());
-						db = openOrCreateDatabase(DATABASE_NAME, SQLiteDatabase.OPEN_READWRITE, null);
+						db = openOrCreateDatabase(DATABASE_NAME,
+								SQLiteDatabase.OPEN_READWRITE, null);
 						db.execSQL(queryBuf.toString());
-					} 
+
+						/**
+						 * End Step 6.
+						 */
+					}
 				} catch (Exception e) {
 					Log.e(tag, e.toString());
 				} finally {
 					if (db.isOpen())
 						db.close();
 				}
+
+				// ถ้าบันทึกได้แสดงข้อความบอกรายละเอียดด้วย Toast
 				if (pointIsRecorded) {
-					if (showingDebugToast) Toast.makeText(
-							getBaseContext(),
-							"Location stored: \nLat: " + sevenSigDigits.format(loc.getLatitude())
-									+ " \nLon: " + sevenSigDigits.format(loc.getLongitude())
-									+ " \nAlt: " + (loc.hasAltitude() ? loc.getAltitude()+"m":"?")
-									+ " \nAcc: " + (loc.hasAccuracy() ? loc.getAccuracy()+"m":"?"),
-							Toast.LENGTH_SHORT).show();
+					if (showingDebugToast)
+						Toast.makeText(
+								getBaseContext(),
+								"Location stored: \nLat: "
+										+ sevenSigDigits.format(loc
+												.getLatitude())
+										+ " \nLon: "
+										+ sevenSigDigits.format(loc
+												.getLongitude())
+										+ " \nAlt: "
+										+ (loc.hasAltitude() ? loc
+												.getAltitude() + "m" : "?")
+										+ " \nAcc: "
+										+ (loc.hasAccuracy() ? loc
+												.getAccuracy() + "m" : "?"),
+								Toast.LENGTH_SHORT).show();
 				} else {
-					if (showingDebugToast) Toast.makeText(
-							getBaseContext(),
-							"Location not accurate enough: \nLat: " + sevenSigDigits.format(loc.getLatitude())
-									+ " \nLon: " + sevenSigDigits.format(loc.getLongitude())
-									+ " \nAlt: " + (loc.hasAltitude() ? loc.getAltitude()+"m":"?")
-									+ " \nAcc: " + (loc.hasAccuracy() ? loc.getAccuracy()+"m":"?"),
-							Toast.LENGTH_SHORT).show();
+					if (showingDebugToast)
+						Toast.makeText(
+								getBaseContext(),
+								"Location not accurate enough: \nLat: "
+										+ sevenSigDigits.format(loc
+												.getLatitude())
+										+ " \nLon: "
+										+ sevenSigDigits.format(loc
+												.getLongitude())
+										+ " \nAlt: "
+										+ (loc.hasAltitude() ? loc
+												.getAltitude() + "m" : "?")
+										+ " \nAcc: "
+										+ (loc.hasAccuracy() ? loc
+												.getAccuracy() + "m" : "?"),
+								Toast.LENGTH_SHORT).show();
 				}
 			}
+			currentAccuracy = (loc.hasAccuracy() ? loc.getAccuracy() + "m" : "?");
+			currentAltitude = (loc.hasAltitude()? loc.getAltitude() + "m" : "?");
+			currentSpeed = (loc.hasSpeed() ? loc.getSpeed() + "m/s" : "?");
+			currentSpeed =  currentSpeed + " " + (loc.hasSpeed() ? loc.getSpeed()*3.6 + "km/s" : "?");
+			
 		}
 
 		public void onProviderDisabled(String provider) {
-			if (showingDebugToast) Toast.makeText(getBaseContext(), "onProviderDisabled: " + provider,
-					Toast.LENGTH_SHORT).show();
+			if (showingDebugToast)
+				Toast.makeText(getBaseContext(),
+						"onProviderDisabled: " + provider, Toast.LENGTH_SHORT)
+						.show();
 
 		}
 
 		public void onProviderEnabled(String provider) {
-			if (showingDebugToast) Toast.makeText(getBaseContext(), "onProviderEnabled: " + provider,
-					Toast.LENGTH_SHORT).show();
+			if (showingDebugToast)
+				Toast.makeText(getBaseContext(),
+						"onProviderEnabled: " + provider, Toast.LENGTH_SHORT)
+						.show();
 
 		}
 
 		public void onStatusChanged(String provider, int status, Bundle extras) {
 			String showStatus = null;
+			/**
+			 * Step 7. Set GPS Status message
+			 */
 			if (status == LocationProvider.AVAILABLE)
-				showStatus = "Available";
-			if (status == LocationProvider.TEMPORARILY_UNAVAILABLE)
-				showStatus = "Temporarily Unavailable";
-			if (status == LocationProvider.OUT_OF_SERVICE)
-				showStatus = "Out of Service";
-			if (status != lastStatus && showingDebugToast) {
-				Toast.makeText(getBaseContext(),
-						"Status: " + showStatus,
-						Toast.LENGTH_SHORT).show();
-			}
-			lastStatus = status;
+				  showStatus = "Available";
+				if (status == LocationProvider.TEMPORARILY_UNAVAILABLE)
+				  showStatus = "Temporarily Unavailable";
+				if (status == LocationProvider.OUT_OF_SERVICE)
+				  showStatus = "Out of Service";
+				if (status != lastGpsStatus && showingDebugToast) {
+				  Toast.makeText(getBaseContext(), "GPS: " + showStatus, Toast.LENGTH_SHORT).show();
+				}
+			/**
+			 * End Step 7.
+			 */
+			lastGpsStatus = status;
 		}
-
 	}
 
 	// Below is the service framework methods
@@ -177,15 +274,14 @@ public class GPSLoggerService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		
+
 		shutdownLoggerService();
-		
 		// Cancel the persistent notification.
 		mNM.cancel(R.string.local_service_started);
 
 		// Tell the user we stopped.
-		Toast.makeText(this, R.string.local_service_stopped,
-						Toast.LENGTH_SHORT).show();
+		Toast.makeText(this, R.string.local_service_stopped, Toast.LENGTH_SHORT)
+				.show();
 	}
 
 	/**
@@ -243,7 +339,7 @@ public class GPSLoggerService extends Service {
 	public static float getMinAccuracyMeters() {
 		return minAccuracyMeters;
 	}
-	
+
 	public static void setMinAccuracyMeters(float minAccuracyMeters) {
 		GPSLoggerService.minAccuracyMeters = minAccuracyMeters;
 	}
@@ -264,6 +360,14 @@ public class GPSLoggerService extends Service {
 		GPSLoggerService getService() {
 			return GPSLoggerService.this;
 		}
+	}
+
+	public static void setRunningStatus(boolean runningStatus) {
+		GPSLoggerService.running = runningStatus;
+	}
+
+	public static boolean isRunningStatus() {
+		return running;
 	}
 
 }

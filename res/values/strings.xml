@@ -8,5 +8,6 @@
 <string name="local_service_started">GPSLoggerService is running</string>
 <string name="local_service_stopped">GPSLoggerService has stopped</string>
 <string name="Export">Export KML to SD Card</string>
-<string name="export_completed">Export Compleated ja!!!</string>
+<string name="export_completed">Export Compleated !!!</string>
+<string name="update">Update</string>
 </resources>

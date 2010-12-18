@@ -15,16 +15,18 @@ public final class R {
         public static final int gpslogger48=0x7f020001;
     }
     public static final class id {
-        public static final int ButtonExport=0x7f050008;
-        public static final int ButtonNewTrip=0x7f050005;
-        public static final int ButtonStart=0x7f050001;
-        public static final int ButtonStop=0x7f050002;
-        public static final int EditTextTripName=0x7f050004;
+        public static final int ButtonStart=0x7f050003;
+        public static final int ButtonStop=0x7f050004;
+        public static final int ButtonUpdate=0x7f05000b;
+        public static final int EditTextTripName=0x7f050002;
         public static final int ScrollView01=0x7f050000;
-        public static final int TableLayout01=0x7f050006;
-        public static final int TableRow01=0x7f050007;
-        public static final int TextViewCurrentTripName=0x7f050003;
-        public static final int ToggleButtonDebug=0x7f050009;
+        public static final int TextViewCurrentAccuracy=0x7f050009;
+        public static final int TextViewCurrentAltitude=0x7f050007;
+        public static final int TextViewCurrentSpeed=0x7f050005;
+        public static final int TextViewCurrentTripName=0x7f050001;
+        public static final int currentAccuracy=0x7f05000a;
+        public static final int currentAltitude=0x7f050008;
+        public static final int currentSpeed=0x7f050006;
     }
     public static final class layout {
         public static final int main=0x7f030000;
@@ -39,5 +41,6 @@ public final class R {
         public static final int service_name=0x7f040004;
         public static final int start=0x7f040002;
         public static final int stop=0x7f040003;
+        public static final int update=0x7f040009;
     }
 }

@@ -8,46 +8,37 @@
 		android:layout_height="wrap_content" android:layout_width="fill_parent">
 
 
+		<TextView android:layout_width="wrap_content" android:id="@+id/TextViewCurrentTripName"
+			android:text="Current trip:" android:layout_height="fill_parent"></TextView>
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/EditTextTripName"
+			android:width="200px"></TextView>
 		<Button android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:textStyle="bold"
 			android:id="@+id/ButtonStart" android:text="@string/start"
-			android:textSize="16px" android:width="90px" />
+			android:textSize="16px" android:width="200px" />
 		<Button android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:textStyle="bold"
 			android:id="@+id/ButtonStop" android:text="@string/stop"
-			android:textSize="16px" android:width="90px" />
-
+			android:textSize="16px" android:width="200px" />
+		<TextView android:layout_width="wrap_content" android:id="@+id/TextViewCurrentSpeed"
+			android:text="Speed (m/s):" android:layout_height="fill_parent"></TextView>
 		<TextView android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/TextViewCurrentTripName"
-			android:text="Current trip:"></TextView>
-		<EditText android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/EditTextTripName"
-			android:width="200px"></EditText>
+			android:layout_height="wrap_content" android:id="@+id/currentSpeed"
+			android:width="200px"></TextView>
+		<TextView android:layout_width="wrap_content" android:id="@+id/TextViewCurrentAltitude"
+			android:text="Altitude:" android:layout_height="fill_parent"></TextView>
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/currentAltitude"
+			android:width="200px"></TextView>
+		<TextView android:layout_width="wrap_content" android:id="@+id/TextViewCurrentAccuracy"
+			android:text="Accuracy:" android:layout_height="fill_parent"></TextView>
+		<TextView android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:id="@+id/currentAccuracy"
+			android:width="200px"></TextView>
 		<Button android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/ButtonNewTrip"
-			android:text="Start new Trip" android:textSize="16px"
-			android:textStyle="bold"></Button>
-		<TableLayout android:id="@+id/TableLayout01"
-			android:layout_height="wrap_content" android:padding="3px"
-			android:layout_width="fill_parent">
-			<TableRow android:id="@+id/TableRow01"
-				android:layout_height="wrap_content" android:layout_width="fill_parent">
-				
-			</TableRow>
-
-		</TableLayout>
-		<Button android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/ButtonExport"
-			android:includeFontPadding="true" android:text="@string/Export"
-			android:textSize="16px" android:textStyle="bold"></Button>
-
-
-
-
-		<ToggleButton android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:id="@+id/ToggleButtonDebug"
-			android:textOn="Debug On" android:textOff="Debug Off" android:width="90px"></ToggleButton>
-
-
+			android:layout_height="wrap_content" android:textStyle="bold"
+			android:id="@+id/ButtonUpdate" android:text="@string/update"
+			android:textSize="16px" android:width="200px" />
 	</LinearLayout>
 </ScrollView>

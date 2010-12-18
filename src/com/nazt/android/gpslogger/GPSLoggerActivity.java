@@ -1,13 +1,8 @@
 package com.nazt.android.gpslogger;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -17,8 +12,6 @@ import com.nazt.android.gpslogger.service.GPSLoggerService;
 import com.nazt.android.gpslogger.R;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -27,175 +20,155 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class GPSLoggerActivity extends Activity {
 
 	private static final String tag = "GPSLoggerActivity";
 
-	private static final String tripFileName = "currentTrip.txt";
-
 	private String currentTripName = "";
 
 	private int altitudeCorrectionMeters = 20;
-
 	private final DecimalFormat sevenSigDigits = new DecimalFormat("0.#######");
+
+	static final int STATE_READY = 1;
+	static final int STATE_START = 2;
+	static final int STATE_STOP = 3;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
 
-		Button button = (Button) findViewById(R.id.ButtonStart);
-		button.setOnClickListener(mStartListener);
-		button = (Button) findViewById(R.id.ButtonStop);
-		button.setOnClickListener(mStopListener);
-		button = (Button) findViewById(R.id.ButtonExport);
-		button.setOnClickListener(mExportListener);
-		// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
+		setContentView(R.layout.main);
+		/**
+		 * 1. Set Action for each Button
+		 */
+		findViewById(R.id.ButtonStart).setOnClickListener(mStartListener);
+		findViewById(R.id.ButtonStop).setOnClickListener(mStopListener);
+		findViewById(R.id.ButtonUpdate).setOnClickListener(mUpdateListener);
+		/**
+		 * End Step 1
+		 */
+
+		if (GPSLoggerService.isRunningStatus()) {
+			setButtonState(STATE_START);
+
+		} else {
+			setButtonState(STATE_STOP);
+		}
+
+		// Auto set TripName to TextView
 		initTripName();
-		button = (Button) findViewById(R.id.ButtonNewTrip);
-		button.setOnClickListener(mNewTripListener);
-		ToggleButton toggleDebug = (ToggleButton) findViewById(R.id.ToggleButtonDebug);
-		toggleDebug.setOnClickListener(mToggleDebugListener);
-		GPSLoggerService.setShowingDebugToast(true);
-		toggleDebug.setChecked(GPSLoggerService.isShowingDebugToast());
+		GPSLoggerService.setShowingDebugToast(false);
 	}
 
-	// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา ถ้าไม่มีสร้างใหม่
+	/**
+	 * generate tripName and set to TextView
+	 */
 	private void initTripName() {
-		// see if there's currently a trip in the trip file
-		String tripName = "new";
-		String info_msg = "";
+		String tripName = "";
 		try {
-			FileInputStream fIn = openFileInput(tripFileName);
-			InputStreamReader isr = new InputStreamReader(fIn);
-			char[] inputBuffer = new char[1024];
-			isr.read(inputBuffer);
-			isr.close();
-			fIn.close();
-			tripName = new String(inputBuffer).trim();
-			info_msg = "loaded trip name: " + tripName;
-			Toast.makeText(getBaseContext(), info_msg, Toast.LENGTH_SHORT)
-					.show();
-			Log.i(tag, info_msg);
-		} catch (FileNotFoundException fnfe) {
-			info_msg = "first run, no" + tripFileName;
-
-			Toast.makeText(getBaseContext(), info_msg, Toast.LENGTH_SHORT);
-			Log.i(tag, info_msg);
-			try {
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMMdd");
-				tripName = sdf.format(new Date());
-				// บันทึกชื่อ Trip ลงใน currentTrip.txt
-				saveTripName(tripName);
-			} catch (Exception e) {
-				Log.e(tag, e.toString());
-			}
-		} catch (IOException ioe) {
-			Log.e(tag, ioe.toString());
+			// Date Format 20101107_093659
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'_'HHmmss");
+			tripName = sdf.format(new Date());
+		} catch (Exception e) {
+			Log.e(tag, e.toString());
 		}
-		EditText tripNameEditor = (EditText) findViewById(R.id.EditTextTripName);
+
+		// Set tripName to TextView
+		TextView tripNameEditor = (TextView) findViewById(R.id.EditTextTripName);
 		tripNameEditor.setText(tripName);
 		currentTripName = tripName;
 	}
 
-	// บันทึกชื่อ Trip ลงใน currentTrip.txt
-	private void saveTripName(String tripName) throws FileNotFoundException,
-			IOException {
-		FileOutputStream fOut = openFileOutput(tripFileName, MODE_PRIVATE);
-		OutputStreamWriter osw = new OutputStreamWriter(fOut);
-		osw.write(tripName);
-		osw.flush();
-		osw.close();
-		fOut.close();
-	}
-
+	/**
+	 * Set action while click on Start Button
+	 */
 	private OnClickListener mStartListener = new OnClickListener() {
 		public void onClick(View v) {
+			new Updater().run();
+			setButtonState(STATE_START);
 			startService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
 	};
 
+	private OnClickListener mUpdateListener = new OnClickListener() {
+		public void onClick(View v) {
+			new Updater().run();
+
+		}
+	};
+
+	/**
+	 * Set Visibility of button
+	 * m/s * 
+	 */
+	public void setButtonState(int state) {
+		Button start_button = (Button) findViewById(R.id.ButtonStart);
+		Button stop_button = (Button) findViewById(R.id.ButtonStop);
+		Button update_button = (Button) findViewById(R.id.ButtonUpdate);
+		start_button.setVisibility(View.GONE);
+		stop_button.setVisibility(View.GONE);
+		update_button  .setVisibility(View.GONE);
+
+		switch (state) {
+		case STATE_STOP:
+			start_button.setVisibility(View.VISIBLE);
+			update_button.setVisibility(View.GONE);
+			break;
+		case STATE_START:
+			stop_button.setVisibility(View.VISIBLE);
+			update_button.setVisibility(View.VISIBLE);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	/**
+	 * Set action while click on Stop Button
+	 */
 	private OnClickListener mStopListener = new OnClickListener() {
 		public void onClick(View v) {
+			setButtonState(STATE_STOP);
+			doExport();
+			doNewTrip();
+			 
 			stopService(new Intent(GPSLoggerActivity.this,
 					GPSLoggerService.class));
 		}
 	};
 
-	private OnClickListener mNewTripListener = new OnClickListener() {
-		public void onClick(View v) {
-			doNewTripDialog();
-		}
-	};
-
-	private OnClickListener mToggleDebugListener = new OnClickListener() {
-		public void onClick(View v) {
-			boolean currentDebugState = GPSLoggerService.isShowingDebugToast();
-			GPSLoggerService.setShowingDebugToast(!currentDebugState);
-			ToggleButton toggleButton = (ToggleButton) findViewById(R.id.ToggleButtonDebug);
-			toggleButton.setChecked(!currentDebugState);
-		}
-	};
-
-	private void doNewTripDialog() {
-		AlertDialog.Builder ad = new AlertDialog.Builder(GPSLoggerActivity.this);
-		ad.setTitle("Whammo!");
-		ad.setMessage("Are you sure that you want to start anew?");
-		ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// export ข้อมูลลง KML แล้วลบข้อมูลใน database
-				// แล้วก็บันทึกชื่อทริปใหม่ลงใน currentTrip.txt
-				doNewTrip();
-			}
-		});
-		ad.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int whichButton) {
-				// load ข้อมูลชื่อ Trip ในไฟล์ currentTrip.txt ขึ้นมา
-				// เคสนี้มันโหลดอย่างเดียวอยู่แล้ว
-				initTripName();
-			}
-		});
-		ad.show();
-	}
-
-	// export ข้อมูลลง KML แล้วลบข้อมูลใน database แล้วก็บันทึกชื่อทริปใหม่ลงใน
-	// currentTrip.txt
+	/**
+	 * Clear Database data and set new tripName to
+	 */
 	private void doNewTrip() {
 		SQLiteDatabase db = null;
 		try {
-			doExport();
 			db = openOrCreateDatabase(GPSLoggerService.DATABASE_NAME,
 					SQLiteDatabase.OPEN_READWRITE, null);
 			db.execSQL("DELETE FROM " + GPSLoggerService.POINTS_TABLE_NAME);
-			EditText tripNameEditor = (EditText) findViewById(R.id.EditTextTripName);
-			saveTripName(tripNameEditor.getText().toString());
 		} catch (Exception e) {
 			Log.e(tag, e.toString());
 		} finally {
+			initTripName();
 			close_db(db);
 		}
 	}
 
-	private OnClickListener mExportListener = new OnClickListener() {
-		public void onClick(View v) {
-			doExport();
-		}
-	};
-
+	/**
+	 * Export database contents to a kml file
+	 */
 	private void doExport() {
-		// export the db contents to a kml file
 		SQLiteDatabase db = null;
 		Cursor cursor = null;
 		try {
-			// NAzT
-			// Manually set altitudeCorectionMeters
-			altitudeCorrectionMeters = 20;
+			// Hard code to set altitudeCorectionMeters
+			this.setAltitudeCorrectionMeters(40);
 
 			db = openOrCreateDatabase(GPSLoggerService.DATABASE_NAME,
 					SQLiteDatabase.OPEN_READWRITE, null);
@@ -210,7 +183,7 @@ public class GPSLoggerActivity extends Activity {
 			int altitudeColumnIndex = cursor.getColumnIndexOrThrow("ALTITUDE");
 			int accuracyColumnIndex = cursor.getColumnIndexOrThrow("ACCURACY");
 			if (cursor.moveToFirst()) {
-				// fileBuf แชร์กันเขียน
+				// fileBuf แชร์กันเขียน (Header, coordinates, Footer);
 				StringBuffer fileBuf = new StringBuffer();
 				String beginTimestamp = null;
 				String endTimestamp = null;
@@ -219,31 +192,49 @@ public class GPSLoggerActivity extends Activity {
 				// (แชร์fileBuf) initValuesMap เอาไว้เซ็ทค่าเฉยๆ
 				initFileBuf(fileBuf, initValuesMap());
 
-				// วนลูปเขียนพิกัดลงไฟล์จ้ะ
+				// Write coordinates to file
 				do {
 					gmtTimestamp = cursor.getString(gmtTimestampColumnIndex);
 					if (beginTimestamp == null) {
 						beginTimestamp = gmtTimestamp;
 					}
+					/**
+					 * 2. getData from database (cursor);
+					 */
 					double latitude = cursor.getDouble(latitudeColumnIndex);
 					double longitude = cursor.getDouble(longitudeColumnIndex);
 					double altitude = cursor.getDouble(altitudeColumnIndex)
-							+ altitudeCorrectionMeters;
+							+ this.getAltitudeCorrectionMeters();
 					double accuracy = cursor.getDouble(accuracyColumnIndex);
-					// เขียนข้อมูลพิกัดลงใน fileBuffer (ตัวแปร fileBuf)
+
+					/**
+					 * End step 2.
+					 */
+
+					/**
+					 * 3. Write data (query from database) to file
+					 */
 					fileBuf.append(sevenSigDigits.format(longitude) + ","
 							+ sevenSigDigits.format(latitude) + "," + altitude
 							+ "\n");
+
+					/**
+					 * End Step 3.
+					 */
 				} while (cursor.moveToNext());
 
 				endTimestamp = gmtTimestamp;
-				// closeFileBuf ปิด Setting ไฟล์ KML ส่วนหลังหลังเก็บพิกัด (แชร์
-				// fileBuf)
+				// closeFileBuf ปิด Setting ไฟล์ KML ส่วนหลังหลังเก็บพิกัด
+				// (แชร์fileBuf)
 				closeFileBuf(fileBuf, beginTimestamp, endTimestamp);
+
 				// แปลงร่าง File Buffer เป็น String
 				String fileContents = fileBuf.toString();
 				Log.d(tag, fileContents);
-				// กำหนดปลายทางการเขียนไฟล์
+
+				/**
+				 * Step 4. Write file to /sdcard
+				 */
 				File sdDir = new File("/sdcard/GPSLogger");
 				sdDir.mkdirs();
 				File file = new File("/sdcard/GPSLogger/" + currentTripName
@@ -251,10 +242,15 @@ public class GPSLoggerActivity extends Activity {
 				FileWriter sdWriter = new FileWriter(file, false);
 				sdWriter.write(fileContents);
 				sdWriter.close();
+
+				/**
+				 * End Step 4.
+				 */
 				// R.string.export_completed Predefined in string.xml
 				Toast.makeText(getBaseContext(), R.string.export_completed,
 						Toast.LENGTH_LONG).show();
-				// cursor.moveToFirst() ไม่สำเร็จ
+				// ถ้า cursor.moveToFirst() ไม่สำเร็จ แปลว่าไม่มีข้อมูลใน
+				// database
 			} else {
 				Toast.makeText(
 						getBaseContext(),
@@ -278,8 +274,13 @@ public class GPSLoggerActivity extends Activity {
 		}
 	}
 
-	private HashMap initValuesMap() {
-		HashMap valuesMap = new HashMap();
+	/**
+	 * Initial kml setting data
+	 * 
+	 * @return HashMap<String, String>
+	 */
+	private HashMap<String, String> initValuesMap() {
+		HashMap<String, String> valuesMap = new HashMap<String, String>();
 
 		valuesMap.put("FILENAME", currentTripName);
 		// use ground settings for the export
@@ -290,7 +291,8 @@ public class GPSLoggerActivity extends Activity {
 		return valuesMap;
 	}
 
-	private void initFileBuf(StringBuffer fileBuf, HashMap valuesMap) {
+	private void initFileBuf(StringBuffer fileBuf,
+			HashMap<String, String> valuesMap) {
 		fileBuf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 		fileBuf.append("<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n");
 		fileBuf.append("  <Document>\n");
@@ -334,6 +336,9 @@ public class GPSLoggerActivity extends Activity {
 		fileBuf.append("</kml>");
 	}
 
+	/**
+	 * Format timestamp for human
+	 */
 	private String zuluFormat(String beginTimestamp) {
 		// turn 20081215135500 into 2008-12-15T13:55:00Z
 		StringBuffer buf = new StringBuffer(beginTimestamp);
@@ -353,9 +358,29 @@ public class GPSLoggerActivity extends Activity {
 	public int getAltitudeCorrectionMeters() {
 		return altitudeCorrectionMeters;
 	}
+
 	public void close_db(SQLiteDatabase db) {
 		if (db != null && db.isOpen()) {
 			db.close();
 		}
 	}
+	
+
+	public class Updater extends Thread {
+		TextView currentSpeed = (TextView) findViewById(R.id.currentSpeed);
+		TextView currentAltitude = (TextView) findViewById(R.id.currentAltitude);
+		TextView currentAccuracy = (TextView) findViewById(R.id.currentAccuracy);
+
+		/**
+		 * Runs the thread.
+		 */
+		public void run() {
+
+			currentSpeed.setText(GPSLoggerService.currentSpeed);
+			currentAltitude.setText(GPSLoggerService.currentAltitude);
+			currentAccuracy.setText(GPSLoggerService.currentAccuracy);
+
+		}
+	}
+
 }
